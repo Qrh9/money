@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>My Money Goal</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(1200px 500px at 10% 10%, rgba(10,132,255,0.06), transparent 8%),
+        radial-gradient(900px 300px at 90% 90%, rgba(88,86,214,0.04), transparent 6%),
+        #f2f2f7;
+      font-family: -apple-system, "SF Pro Text", "SF Pro Display", system-ui, -webkit-system-font, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1c1c1e;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 24px;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 560px;
+      padding: 28px 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+      font-size: 12px;
+      color: #8e8e93;
+    }
+
+    .theme-toggle {
+      border-radius: 999px;
+      border: 1px solid rgba(60,60,67,0.16);
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.9);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1c1c1e;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .12s ease, transform .08s ease, box-shadow .12s ease;
+    }
+
+    .theme-toggle:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    /* Top progress panel */
+    .progress-panel {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(8px) saturate(110%);
+      border-radius: 26px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .progress-title {
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6e6e73;
+      font-weight: 600;
+    }
+
+    .progress-target {
+      font-size: 12px;
+      color: #8e8e93;
+      font-weight: 500;
+    }
+
+    .progress-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .amount-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .amount-label {
+      font-size: 12px;
+      color: #8e8e93;
+    }
+
+    .amount-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1c1c1e;
+      letter-spacing: -0.01em;
+    }
+
+    .percent-chip {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(60,60,67,0.08);
+      background: rgba(242,242,247,0.8);
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      color: #1c1c1e;
+    }
+
+    .percent-main {
+      font-weight: 700;
+      color: #0a84ff;
+      font-size: 15px;
+    }
+
+    /* Main bar */
+    .progress-bar-bg {
+      width: 100%;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(60,60,67,0.08);
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.6);
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0a84ff 0%, #5ac8fa 100%);
+      transition: width .28s cubic-bezier(.2,.9,.3,1);
+      box-shadow: 0 6px 18px rgba(10,132,255,0.14);
+      border-radius: 999px;
+    }
+
+    /* transparent red debt overlay */
+    .progress-bar-debt {
+      position: absolute;
+      inset: 0 auto 0 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        rgba(255,59,48,0.65) 0%,
+        rgba(255,149,0,0.65) 100%
+      );
+      mix-blend-mode: multiply;
+      opacity: 0.9;
+      pointer-events: none;
+      transition: width .28s cubic-bezier(.2,.9,.3,1);
+    }
+
+    .progress-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #8e8e93;
+    }
+
+    /* Spend buffer mini bar */
+    .safe-bar-wrapper {
+      margin-top: 8px;
+    }
+
+    .safe-bar-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #8e8e93;
+      margin-bottom: 4px;
+    }
+
+    .safe-bar-bg {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(60,60,67,0.06);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .safe-bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #34c759 0%, #a3e635 100%);
+      box-shadow: 0 3px 10px rgba(52,199,89,0.3);
+      transition: width .28s cubic-bezier(.2,.9,.3,1);
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(6px);
+      border-radius: 22px;
+      padding: 18px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .title-row h1 {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 700;
+      color: #1c1c1e;
+    }
+
+    .title-row.small-title h1 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .pill {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(242,242,247,0.9);
+      border: 1px solid rgba(60,60,67,0.06);
+      color: #6e6e73;
+      font-weight: 600;
+    }
+
+    .pill-small {
+      font-size: 11px;
+      padding-inline: 8px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #8e8e93;
+      margin-bottom: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #8e8e93;
+      margin-bottom: 6px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(60,60,67,0.08);
+      background: rgba(255,255,255,0.95);
+      color: #1c1c1e;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+      -webkit-appearance: textfield;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    input[type="number"]::placeholder,
+    input[type="text"]::placeholder {
+      color: #b9b9bd;
+      font-size: 13px;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      border-color: rgba(10,132,255,0.9);
+      box-shadow: 0 6px 18px rgba(10,132,255,0.12);
+      background: #fff;
+    }
+
+    .small-select {
+      padding-block: 8px;
+      font-size: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(60,60,67,0.06);
+      margin: 12px 0;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #8e8e93;
+      margin-bottom: 6px;
+    }
+
+    .status-line {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6e6e73;
+      font-weight: 500;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, .9fr);
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      width: 100%;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      background: rgba(242,242,247,0.85);
+      color: #1c1c1e;
+      transition: transform .08s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+      user-select: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #0a84ff, #0060d6);
+      color: #fff;
+      border-color: rgba(0,0,0,0.06);
+      box-shadow: 0 12px 30px rgba(10,132,255,0.18);
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.9);
+      border-color: rgba(60,60,67,0.06);
+    }
+
+    .btn-soft {
+      background: linear-gradient(180deg, rgba(10,132,255,0.06), rgba(10,132,255,0.02));
+      border-color: rgba(10,132,255,0.12);
+      color: #0a6fbf;
+    }
+
+    .btn-danger {
+      background: linear-gradient(180deg, rgba(255,59,48,0.06), rgba(255,59,48,0.02));
+      border-color: rgba(255,59,48,0.12);
+      color: #bf2b2b;
+    }
+
+    .btn span.icon {
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(.997);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.03);
+      opacity: 0.98;
+    }
+
+    /* Sub-goals & wish list */
+    .subgoals-list,
+    .wishlist-list {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 160px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .subgoal-item,
+    .wishlist-item {
+      font-size: 11px;
+      color: #8e8e93;
+    }
+
+    .subgoal-title-row,
+    .wishlist-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+      gap: 4px;
+    }
+
+    .subgoal-name,
+    .wishlist-name {
+      font-weight: 600;
+      font-size: 12px;
+      color: #1c1c1e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subgoal-meta,
+    .wishlist-meta {
+      font-size: 11px;
+      color: #8e8e93;
+      white-space: nowrap;
+    }
+
+    .subgoal-bar-bg,
+    .wishlist-bar-bg {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(60,60,67,0.08);
+      overflow: hidden;
+    }
+
+    .subgoal-bar-fill,
+    .wishlist-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0a84ff 0%, #34c759 100%);
+      width: 0%;
+      transition: width .25s ease;
+    }
+
+    .empty-note {
+      font-size: 11px;
+      color: #b0b0b5;
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    /* Spending breakdown */
+    .spend-breakdown {
+      font-size: 11px;
+      color: #8e8e93;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px 10px;
+      margin-top: 2px;
+    }
+
+    .spend-breakdown span strong {
+      color: #1c1c1e;
+      font-weight: 600;
+    }
+
+    /* Timeline */
+    .timeline-list {
+      margin-top: 4px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 4px;
+      font-size: 11px;
+    }
+
+    .timeline-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(60,60,67,0.06);
+    }
+
+    .timeline-item:last-child {
+      border-bottom: none;
+    }
+
+    .timeline-main {
+      color: #1c1c1e;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .timeline-meta {
+      color: #8e8e93;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .timeline-empty {
+      font-size: 11px;
+      color: #b0b0b5;
+      font-style: italic;
+      padding: 4px 0;
+    }
+
+    .footer-hint {
+      text-align: center;
+      font-size: 11px;
+      color: #8e8e93;
+      margin-top: 8px;
+    }
+
+    /* Dark mode */
+    body.dark {
+      background:
+        radial-gradient(1200px 500px at 10% 10%, rgba(10,132,255,0.22), transparent 10%),
+        radial-gradient(900px 300px at 90% 90%, rgba(88,86,214,0.28), transparent 10%),
+        #05030b;
+      color: #f2f2f7;
+    }
+
+    body.dark .progress-panel,
+    body.dark .card {
+      background: rgba(16,16,24,0.94);
+      border-color: rgba(255,255,255,0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.9);
+    }
+
+    body.dark .progress-title,
+    body.dark .progress-target,
+    body.dark .amount-label,
+    body.dark .hint,
+    body.dark label,
+    body.dark .stats-row span,
+    body.dark .status-line,
+    body.dark .safe-bar-label-row,
+    body.dark .timeline-meta,
+    body.dark .timeline-main,
+    body.dark .spend-breakdown,
+    body.dark .footer-hint {
+      color: #e5e5f0;
+    }
+
+    body.dark .amount-value,
+    body.dark .title-row h1,
+    body.dark .subgoal-name,
+    body.dark .wishlist-name {
+      color: #ffffff;
+    }
+
+    body.dark .progress-bar-bg,
+    body.dark .safe-bar-bg,
+    body.dark .subgoal-bar-bg,
+    body.dark .wishlist-bar-bg {
+      background: rgba(250,250,255,0.14);
+    }
+
+    body.dark .btn {
+      background: rgba(40,40,60,0.95);
+      color: #f8f8ff;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.85);
+      border-color: rgba(255,255,255,0.06);
+    }
+
+    body.dark .btn-ghost {
+      background: rgba(22,22,32,1);
+    }
+
+    body.dark .btn-primary {
+      background: linear-gradient(180deg, #0a84ff, #0043b8);
+    }
+
+    body.dark input[type="number"],
+    body.dark input[type="text"],
+    body.dark select {
+      background: rgba(12,12,20,0.96);
+      color: #f2f2ff;
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    body.dark .theme-toggle {
+      background: rgba(20,20,32,0.96);
+      color: #f8f8ff;
+      border-color: rgba(255,255,255,0.16);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.9);
+    }
+
+    @media (max-width: 560px) {
+      .wrapper { padding: 18px 14px; }
+      .amount-value { font-size: 32px; }
+      .progress-panel { padding: 16px; border-radius: 20px; }
+      .card { border-radius: 18px; padding: 14px; }
+      .grid-2 { gap: 8px; }
+      .actions { grid-template-columns: 1fr 0.9fr; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="top-bar">
+      <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+    </div>
+
+    <!-- Top progress panel -->
+    <div class="progress-panel">
+      <div class="progress-header">
+        <div class="progress-title">Savings Progress</div>
+        <div class="progress-target" id="goalSmall">Goal: 0</div>
+      </div>
+
+      <div class="progress-main">
+        <div class="amount-block">
+          <div class="amount-label">Currently saved</div>
+          <div class="amount-value" id="mainAmount">0</div>
+        </div>
+        <div class="percent-chip">
+          <span class="percent-main" id="mainPercent">0%</span>
+          <span>net of debt</span>
+        </div>
+      </div>
+
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="barSaved"></div>
+        <div class="progress-bar-debt" id="barDebt"></div>
+      </div>
+
+      <div class="progress-footer">
+        <span id="savedMini">Saved: 0</span>
+        <span id="spentMini">Spent: 0</span>
+      </div>
+
+      <div class="safe-bar-wrapper">
+        <div class="safe-bar-label-row">
+          <span>Spend buffer</span>
+          <span id="safeText">Buffer: 0</span>
+        </div>
+        <div class="safe-bar-bg">
+          <div class="safe-bar-fill" id="safeBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+      <div class="title-row">
+        <h1>My Money Goal 💸</h1>
+        <span class="pill">Personal tracking board</span>
+      </div>
+      <div class="hint">
+        Set how much you have and your goal, then use add/spend/debt to update your progress.
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>How much do you have now</label>
+          <div class="input-wrap">
+            <input type="number" id="currentInput" placeholder="e.g. 25000">
+          </div>
+        </div>
+        <div>
+          <label>Goal</label>
+          <div class="input-wrap">
+            <input type="number" id="goalInput" placeholder="e.g. 100000">
+          </div>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-bottom: 10px;">
+        <button class="btn btn-primary" id="setBase">
+          <span class="icon">✔</span>
+          <span>Set base</span>
+        </button>
+        <button class="btn btn-ghost" id="reset">
+          <span class="icon">↺</span>
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stats-row">
+        <span id="savedText">Saved: 0</span>
+        <span id="goalText">Goal: 0</span>
+      </div>
+      <div class="stats-row">
+        <span id="spentText">Spent: 0</span>
+        <span id="debtText">Debt: 0</span>
+      </div>
+      <div class="stats-row">
+        <span id="netSavedText">Net saved: 0</span>
+        <span id="remainingText">Remaining to goal: 0</span>
+      </div>
+      <div class="stats-row">
+        <span id="debtRatioText">Debt vs savings: 0%</span>
+        <span id="bufferUsageText">Buffer used: 0%</span>
+      </div>
+      <div class="stats-row">
+        <span></span>
+        <span id="percentText">Net progress: 0%</span>
+      </div>
+      <div class="stats-row">
+        <span id="streakText">Streak: 0 days</span>
+        <span id="bestStreakText">Best streak: 0 days</span>
+      </div>
+      <div class="status-line" id="statusText">Status: just starting</div>
+
+      <div class="divider"></div>
+
+      <!-- Note shared between actions -->
+      <div class="actions">
+        <div>
+          <label>Note (optional for next action)</label>
+          <div class="input-wrap">
+            <input type="text" id="noteInput" placeholder="e.g. from salary, groceries, etc.">
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- Add money -->
+      <div class="actions">
+        <div>
+          <label>Add money</label>
+          <div class="input-wrap">
+            <input type="number" id="addInput" placeholder="e.g. 5000">
+          </div>
+        </div>
+        <button class="btn btn-soft" id="addBtn">
+          <span class="icon">＋</span>
+          <span>Add</span>
+        </button>
+      </div>
+
+      <!-- Spend money with category -->
+      <div class="actions">
+        <div>
+          <label>Spend money</label>
+          <div class="input-wrap" style="margin-bottom:6px;">
+            <input type="number" id="spendInput" placeholder="e.g. 3000">
+          </div>
+          <div class="input-wrap">
+            <select id="spendCategory" class="small-select">
+              <option value="food">Food</option>
+              <option value="fun">Going out</option>
+              <option value="subs">Subscriptions</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-danger" id="spendBtn">
+          <span class="icon">−</span>
+          <span>Spend</span>
+        </button>
+      </div>
+
+      <!-- Debt -->
+      <div class="actions">
+        <div>
+          <label>Add debt (use negative to reduce)</label>
+          <div class="input-wrap">
+            <input type="number" id="debtInput" placeholder="e.g. 2000 or -500">
+          </div>
+        </div>
+        <button class="btn btn-danger" id="debtBtn">
+          <span class="icon">⚠</span>
+          <span>Debt</span>
+        </button>
+      </div>
+
+      <!-- Spend buffer -->
+      <div class="actions">
+        <div>
+          <label>Set spend buffer</label>
+          <div class="input-wrap">
+            <input type="number" id="bufferInput" placeholder="e.g. 10000">
+          </div>
+        </div>
+        <button class="btn btn-soft" id="bufferBtn">
+          <span class="icon">💡</span>
+          <span>Set buffer</span>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Sub-goals -->
+      <div class="title-row small-title">
+        <h1>Sub-goals</h1>
+        <span class="pill pill-small">Laptop · Travel · Emergency</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>Sub-goal name</label>
+          <div class="input-wrap">
+            <input type="text" id="subGoalName" placeholder="e.g. Laptop">
+          </div>
+        </div>
+        <div>
+          <label>Target amount</label>
+          <div class="input-wrap">
+            <input type="number" id="subGoalTarget" placeholder="e.g. 500000">
+          </div>
+        </div>
+      </div>
+      <div class="actions" style="grid-template-columns:minmax(0,1fr);margin-bottom:4px;">
+        <button class="btn btn-soft" id="addSubGoal">
+          <span class="icon">＋</span>
+          <span>Add sub-goal</span>
+        </button>
+      </div>
+      <div id="subGoalsList" class="subgoals-list">
+        <div class="empty-note">No sub-goals yet.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Wish list -->
+      <div class="title-row small-title">
+        <h1>Wish list</h1>
+        <span class="pill pill-small">Things you want to buy</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>Item name</label>
+          <div class="input-wrap">
+            <input type="text" id="wishName" placeholder="e.g. Headphones">
+          </div>
+        </div>
+        <div>
+          <label>Price</label>
+          <div class="input-wrap">
+            <input type="number" id="wishPrice" placeholder="e.g. 80000">
+          </div>
+        </div>
+      </div>
+      <div class="actions" style="grid-template-columns:minmax(0,1fr);margin-bottom:4px;">
+        <button class="btn btn-soft" id="addWish">
+          <span class="icon">＋</span>
+          <span>Add wish</span>
+        </button>
+      </div>
+      <div id="wishList" class="wishlist-list">
+        <div class="empty-note">No items yet.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Future simulation -->
+      <div class="title-row small-title">
+        <h1>Future simulation</h1>
+        <span class="pill pill-small">Plan ahead</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>If I save this amount</label>
+          <div class="input-wrap">
+            <input type="number" id="savePerInput" placeholder="e.g. 3000">
+          </div>
+        </div>
+        <div>
+          <label>Frequency</label>
+          <div class="input-wrap">
+            <select id="savePerMode" class="small-select">
+              <option value="day">per day</option>
+              <option value="week">per week</option>
+              <option value="month">per month</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="actions" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);align-items:center;">
+        <button class="btn btn-soft" id="runSimBtn">
+          <span class="icon">📈</span>
+          <span>Run simulation</span>
+        </button>
+        <div class="status-line" id="simulationText">
+          Simulation: enter an amount and set a goal to see how fast you reach it.
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Spending breakdown -->
+      <div class="title-row small-title" style="margin-bottom:4px;">
+        <h1>Spending breakdown</h1>
+      </div>
+      <div id="spendBreakdown" class="spend-breakdown">
+        <span class="empty-note">No spending yet.</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Timeline -->
+      <div class="title-row small-title" style="margin-bottom:4px;">
+        <h1>Timeline</h1>
+        <div class="input-wrap" style="max-width:140px;">
+          <select id="timelineFilter" class="small-select">
+            <option value="all">All</option>
+            <option value="today">Today</option>
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+          </select>
+        </div>
+      </div>
+      <div id="timelineList" class="timeline-list">
+        <div class="timeline-empty">No entries yet.</div>
+      </div>
+
+      <div class="footer-hint">
+        Progress, sub-goals and timeline are stored locally on your device (localStorage).
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- helpers ---
+    function formatNum(n) {
+      return n.toLocaleString("en-US");
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, ch => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[ch] || ch));
+    }
+
+    function daysBetween(a, b) {
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const diff = b.setHours(0,0,0,0) - a.setHours(0,0,0,0);
+      return Math.round(diff / msPerDay);
+    }
+
+    // --- DOM refs ---
+    const themeToggle = document.getElementById("themeToggle");
+
+    const currentInput = document.getElementById("currentInput");
+    const goalInput = document.getElementById("goalInput");
+    const addInput = document.getElementById("addInput");
+    const spendInput = document.getElementById("spendInput");
+    const debtInput = document.getElementById("debtInput");
+    const bufferInput = document.getElementById("bufferInput");
+    const noteInput = document.getElementById("noteInput");
+    const spendCategorySelect = document.getElementById("spendCategory");
+
+    const barSaved = document.getElementById("barSaved");
+    const barDebt = document.getElementById("barDebt");
+    const safeBar = document.getElementById("safeBar");
+
+    const savedText = document.getElementById("savedText");
+    const goalText = document.getElementById("goalText");
+    const spentText = document.getElementById("spentText");
+    const debtText = document.getElementById("debtText");
+    const netSavedText = document.getElementById("netSavedText");
+    const remainingText = document.getElementById("remainingText");
+    const debtRatioText = document.getElementById("debtRatioText");
+    const bufferUsageText = document.getElementById("bufferUsageText");
+    const percentText = document.getElementById("percentText");
+    const streakTextEl = document.getElementById("streakText");
+    const bestStreakTextEl = document.getElementById("bestStreakText");
+    const statusText = document.getElementById("statusText");
+
+    const mainAmount = document.getElementById("mainAmount");
+    const mainPercent = document.getElementById("mainPercent");
+    const goalSmall = document.getElementById("goalSmall");
+    const savedMini = document.getElementById("savedMini");
+    const spentMini = document.getElementById("spentMini");
+    const safeText = document.getElementById("safeText");
+
+    const subGoalNameInput = document.getElementById("subGoalName");
+    const subGoalTargetInput = document.getElementById("subGoalTarget");
+    const subGoalsListEl = document.getElementById("subGoalsList");
+
+    const wishNameInput = document.getElementById("wishName");
+    const wishPriceInput = document.getElementById("wishPrice");
+    const wishListEl = document.getElementById("wishList");
+
+    const spendBreakdownEl = document.getElementById("spendBreakdown");
+
+    const timelineFilterSelect = document.getElementById("timelineFilter");
+    const timelineListEl = document.getElementById("timelineList");
+
+    const savePerInputEl = document.getElementById("savePerInput");
+    const savePerModeEl = document.getElementById("savePerMode");
+    const simulationTextEl = document.getElementById("simulationText");
+
+    // --- state ---
+    let saved = 0;
+    let goal = 0;
+    let spent = 0;
+    let debt = 0;
+    let spendBuffer = 0;
+    let spendBufferInitial = 0;
+
+    let subGoals = []; // {id,name,target}
+    let wishList = []; // {id,name,price}
+    let logEntries = []; // {id,kind,amount,category,note,ts}
+
+    let spendCategoriesTotals = {
+      food: 0,
+      fun: 0,
+      subs: 0,
+      other: 0
+    };
+
+    let streakCurrent = 0;
+    let streakBest = 0;
+    let streakLastDate = ""; // yyyy-mm-dd
+
+    // --- persistence ---
+    function loadState() {
+      const data = localStorage.getItem("rio_saving_goal");
+      if (!data) return;
+      try {
+        const obj = JSON.parse(data);
+        saved = obj.saved || 0;
+        goal = obj.goal || 0;
+        spent = obj.spent || 0;
+        debt = obj.debt || 0;
+        spendBuffer = obj.spendBuffer || 0;
+        spendBufferInitial = obj.spendBufferInitial || spendBuffer || 0;
+        subGoals = Array.isArray(obj.subGoals) ? obj.subGoals : [];
+        wishList = Array.isArray(obj.wishList) ? obj.wishList : [];
+        logEntries = Array.isArray(obj.logEntries) ? obj.logEntries : [];
+        spendCategoriesTotals = obj.spendCategoriesTotals || spendCategoriesTotals;
+        streakCurrent = obj.streakCurrent || 0;
+        streakBest = obj.streakBest || 0;
+        streakLastDate = obj.streakLastDate || "";
+
+        currentInput.value = saved || "";
+        goalInput.value = goal || "";
+      } catch (e) {
+        console.error("Failed to load state", e);
+      }
+    }
+
+    function saveState() {
+      const obj = {
+        saved,
+        goal,
+        spent,
+        debt,
+        spendBuffer,
+        spendBufferInitial,
+        subGoals,
+        wishList,
+        logEntries,
+        spendCategoriesTotals,
+        streakCurrent,
+        streakBest,
+        streakLastDate
+      };
+      localStorage.setItem("rio_saving_goal", JSON.stringify(obj));
+    }
+
+    // --- theme ---
+    function updateThemeToggle(theme) {
+      themeToggle.textContent = theme === "dark" ? "☀ Light" : "🌙 Dark";
+    }
+
+    function applyTheme(theme) {
+      if (theme === "dark") {
+        document.body.classList.add("dark");
+      } else {
+        document.body.classList.remove("dark");
+      }
+      localStorage.setItem("rio_theme", theme);
+      updateThemeToggle(theme);
+    }
+
+    themeToggle.onclick = () => {
+      const current = document.body.classList.contains("dark") ? "dark" : "light";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+    };
+
+    // --- log & streak ---
+    function addLogEntry(kind, amount, options = {}) {
+      const now = new Date();
+      const ts = now.toISOString();
+      const entry = {
+        id: Date.now().toString(16) + Math.random().toString(16).slice(2),
+        kind,
+        amount,
+        category: options.category || null,
+        note: options.note || "",
+        ts
+      };
+      logEntries.unshift(entry);
+      if (logEntries.length > 200) logEntries.pop();
+    }
+
+    function updateStreakForAdd() {
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0, 10);
+      if (!streakLastDate) {
+        streakCurrent = 1;
+      } else {
+        const last = new Date(streakLastDate);
+        const diffDays = daysBetween(last, today);
+        if (diffDays === 0) {
+          // same day, do nothing
+          return;
+        } else if (diffDays === 1) {
+          streakCurrent += 1;
+        } else if (diffDays > 1) {
+          streakCurrent = 1;
+        }
+      }
+      streakLastDate = todayStr;
+      if (streakCurrent > streakBest) streakBest = streakCurrent;
+    }
+
+    // --- render pieces ---
+    function renderSubGoals(netSaved) {
+      if (!subGoals.length) {
+        subGoalsListEl.innerHTML = '<div class="empty-note">No sub-goals yet.</div>';
+        return;
+      }
+      let html = "";
+      for (const g of subGoals) {
+        const target = Number(g.target) || 0;
+        const pct = target > 0 ? Math.min(100, Math.round((netSaved / target) * 100)) : 0;
+        const done = Math.min(netSaved, target);
+        html += `
+          <div class="subgoal-item">
+            <div class="subgoal-title-row">
+              <span class="subgoal-name">${escapeHtml(g.name)}</span>
+              <span class="subgoal-meta">${pct}% · ${formatNum(done)}/${formatNum(target)}</span>
+            </div>
+            <div class="subgoal-bar-bg">
+              <div class="subgoal-bar-fill" style="width:${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }
+      subGoalsListEl.innerHTML = html;
+    }
+
+    function renderWishList(netSaved) {
+      if (!wishList.length) {
+        wishListEl.innerHTML = '<div class="empty-note">No items yet.</div>';
+        return;
+      }
+      let html = "";
+      for (const w of wishList) {
+        const price = Number(w.price) || 0;
+        const pct = price > 0 ? Math.min(100, Math.round((netSaved / price) * 100)) : 0;
+        html += `
+          <div class="wishlist-item">
+            <div class="wishlist-title-row">
+              <span class="wishlist-name">${escapeHtml(w.name)}</span>
+              <span class="wishlist-meta">${pct}% · ${formatNum(price)}</span>
+            </div>
+            <div class="wishlist-bar-bg">
+              <div class="wishlist-bar-fill" style="width:${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }
+      wishListEl.innerHTML = html;
+    }
+
+    function renderSpendingBreakdown() {
+      const totals = spendCategoriesTotals || {};
+      const total =
+        (totals.food || 0) +
+        (totals.fun || 0) +
+        (totals.subs || 0) +
+        (totals.other || 0);
+
+      if (!total) {
+        spendBreakdownEl.innerHTML = '<span class="empty-note">No spending yet.</span>';
+        return;
+      }
+
+      function row(label, key) {
+        const val = totals[key] || 0;
+        const pct = Math.round((val / total) * 100);
+        return `<span><strong>${label}:</strong> ${pct}%</span><span>${formatNum(val)}</span>`;
+      }
+
+      spendBreakdownEl.innerHTML = [
+        row("Food", "food"),
+        row("Going out", "fun"),
+        row("Subscriptions", "subs"),
+        row("Other", "other")
+      ].join("");
+    }
+
+    function renderTimeline() {
+      const filter = timelineFilterSelect.value;
+      if (!logEntries.length) {
+        timelineListEl.innerHTML = '<div class="timeline-empty">No entries yet.</div>';
+        return;
+      }
+      const now = new Date();
+      const filtered = logEntries.filter(e => {
+        const dt = new Date(e.ts);
+        if (isNaN(dt.getTime())) return true;
+        if (filter === "today") {
+          return daysBetween(dt, new Date(now)) === 0;
+        } else if (filter === "week") {
+          return daysBetween(dt, new Date(now)) <= 7;
+        } else if (filter === "month") {
+          return daysBetween(dt, new Date(now)) <= 30;
+        }
+        return true;
+      });
+
+      if (!filtered.length) {
+        timelineListEl.innerHTML = '<div class="timeline-empty">No entries for this period.</div>';
+        return;
+      }
+
+      let html = "";
+      for (const e of filtered) {
+        const dt = new Date(e.ts);
+        const dateStr = dt.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        });
+        const timeStr = dt.toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        const sign = e.kind === "add" ? "+" : e.kind === "spend" ? "−" : "D";
+        const catLabel = e.category ? ` · ${e.category}` : "";
+        const notePart = e.note ? " – " + escapeHtml(e.note) : "";
+        html += `
+          <div class="timeline-item">
+            <span class="timeline-main">${sign}${formatNum(e.amount)}${catLabel}${notePart}</span>
+            <span class="timeline-meta">${dateStr} ${timeStr}</span>
+          </div>
+        `;
+      }
+      timelineListEl.innerHTML = html;
+    }
+
+    // --- main render ---
+    function render() {
+      const netSaved = Math.max(0, saved - debt);
+      const rawPercent = goal > 0 ? (saved / goal) * 100 : 0;
+      const savedPercent = goal > 0 ? Math.min(100, Math.round(rawPercent)) : 0;
+
+      const effectiveDebt = Math.min(debt, saved);
+      let debtPercent = 0;
+      if (saved > 0 && savedPercent > 0 && effectiveDebt > 0) {
+        const share = effectiveDebt / saved;
+        debtPercent = Math.min(savedPercent, Math.round(savedPercent * share));
+      }
+
+      const netPercent = goal > 0 ? Math.min(100, Math.round((netSaved / goal) * 100)) : 0;
+
+      barSaved.style.width = savedPercent + "%";
+      barDebt.style.width = debtPercent + "%";
+
+      savedText.textContent = "Saved: " + formatNum(saved);
+      goalText.textContent = "Goal: " + formatNum(goal);
+      spentText.textContent = "Spent: " + formatNum(spent);
+      debtText.textContent = "Debt: " + formatNum(debt);
+      netSavedText.textContent = "Net saved: " + formatNum(netSaved);
+      remainingText.textContent = "Remaining to goal: " + formatNum(Math.max(0, goal - netSaved));
+
+      const debtRatio = saved > 0 ? Math.round((debt / saved) * 100) : 0;
+      debtRatioText.textContent = "Debt vs savings: " + debtRatio + "%";
+
+      percentText.textContent = "Net progress: " + netPercent + "%";
+
+      mainAmount.textContent = formatNum(saved);
+      mainPercent.textContent = netPercent + "%";
+      goalSmall.textContent = "Goal: " + formatNum(goal);
+      savedMini.textContent = "Saved: " + formatNum(saved);
+      spentMini.textContent = "Spent: " + formatNum(spent);
+
+      mainPercent.style.color = netPercent >= 80 ? "#10b981" : "#0071e3";
+
+      // buffer bar
+      if (spendBufferInitial > 0) {
+        const bufferPercent = Math.round((spendBuffer / spendBufferInitial) * 100);
+        safeText.textContent =
+          "Buffer: " +
+          formatNum(spendBuffer) +
+          " / " +
+          formatNum(spendBufferInitial);
+        safeBar.style.width = Math.min(100, Math.max(0, bufferPercent)) + "%";
+        bufferUsageText.textContent =
+          "Buffer used: " +
+          formatNum(100 - Math.max(0, Math.min(100, bufferPercent))) +
+          "%";
+      } else {
+        safeText.textContent = "Buffer: 0";
+        safeBar.style.width = "0%";
+        bufferUsageText.textContent = "Buffer used: 0%";
+      }
+
+      // streak
+      streakTextEl.textContent =
+        "Streak: " + streakCurrent + " day" + (streakCurrent === 1 ? "" : "s");
+      bestStreakTextEl.textContent =
+        "Best streak: " + streakBest + " day" + (streakBest === 1 ? "" : "s");
+
+      // status line
+      let status = "Status: just starting";
+      if (netPercent >= 90 && debtRatio <= 10) {
+        status = "Status: excellent – very close to your goal.";
+      } else if (netPercent >= 70 && debtRatio <= 25) {
+        status = "Status: strong – keep your spending under control.";
+      } else if (netPercent >= 40) {
+        status = "Status: on track – try to reduce new debt and add more often.";
+      } else if (netPercent > 0) {
+        status = "Status: early stage – small, consistent adds will move fast.";
+      }
+      statusText.textContent = status;
+
+      renderSubGoals(netSaved);
+      renderWishList(netSaved);
+      renderSpendingBreakdown();
+      renderTimeline();
+    }
+
+    // --- actions ---
+    document.getElementById("setBase").onclick = () => {
+      const c = Number(currentInput.value) || 0;
+      const g = Number(goalInput.value) || 0;
+      saved = Math.max(0, c);
+      goal = Math.max(0, g);
+      saveState();
+      render();
+    };
+
+    document.getElementById("reset").onclick = () => {
+      saved = 0;
+      goal = 0;
+      spent = 0;
+      debt = 0;
+      spendBuffer = 0;
+      spendBufferInitial = 0;
+      subGoals = [];
+      wishList = [];
+      logEntries = [];
+      spendCategoriesTotals = { food: 0, fun: 0, subs: 0, other: 0 };
+      streakCurrent = 0;
+      streakBest = 0;
+      streakLastDate = "";
+      currentInput.value = "";
+      goalInput.value = "";
+      addInput.value = "";
+      spendInput.value = "";
+      debtInput.value = "";
+      bufferInput.value = "";
+      noteInput.value = "";
+      subGoalNameInput.value = "";
+      subGoalTargetInput.value = "";
+      wishNameInput.value = "";
+      wishPriceInput.value = "";
+      savePerInputEl.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("addBtn").onclick = () => {
+      const v = Number(addInput.value) || 0;
+      if (v <= 0) return;
+      saved += v;
+      const note = noteInput.value.trim();
+      if (v > 0) {
+        addLogEntry("add", v, { note });
+        updateStreakForAdd();
+      }
+      addInput.value = "";
+      noteInput.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("spendBtn").onclick = () => {
+      const v = Number(spendInput.value) || 0;
+      if (v <= 0) return;
+      const category = spendCategorySelect.value || "other";
+      const note = noteInput.value.trim();
+
+      spent += v;
+      spendCategoriesTotals[category] =
+        (spendCategoriesTotals[category] || 0) + v;
+
+      let remaining = v;
+
+      // consume from buffer first
+      if (spendBuffer > 0) {
+        const useFromBuffer = Math.min(remaining, spendBuffer);
+        spendBuffer -= useFromBuffer;
+        remaining -= useFromBuffer;
+      }
+
+      // then from savings
+      if (remaining > 0) {
+        saved = Math.max(0, saved - remaining);
+      }
+
+      addLogEntry("spend", v, { category, note });
+
+      spendInput.value = "";
+      noteInput.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("debtBtn").onclick = () => {
+      const v = Number(debtInput.value) || 0;
+      if (v === 0) return;
+      const note = noteInput.value.trim();
+      debt += v;
+      if (debt < 0) debt = 0;
+      addLogEntry("debt", v, { note });
+      debtInput.value = "";
+      noteInput.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("bufferBtn").onclick = () => {
+      const v = Number(bufferInput.value) || 0;
+      if (v <= 0) {
+        spendBuffer = 0;
+        spendBufferInitial = 0;
+      } else {
+        spendBuffer = v;
+        spendBufferInitial = v;
+      }
+      bufferInput.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("addSubGoal").onclick = () => {
+      const name = subGoalNameInput.value.trim();
+      const target = Number(subGoalTargetInput.value) || 0;
+      if (!name || target <= 0) return;
+      subGoals.push({
+        id: Date.now().toString(16) + Math.random().toString(16).slice(2),
+        name,
+        target
+      });
+      subGoalNameInput.value = "";
+      subGoalTargetInput.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("addWish").onclick = () => {
+      const name = wishNameInput.value.trim();
+      const price = Number(wishPriceInput.value) || 0;
+      if (!name || price <= 0) return;
+      wishList.push({
+        id: Date.now().toString(16) + Math.random().toString(16).slice(2),
+        name,
+        price
+      });
+      wishNameInput.value = "";
+      wishPriceInput.value = "";
+      saveState();
+      render();
+    };
+
+    document.getElementById("runSimBtn").onclick = () => {
+      const v = Number(savePerInputEl.value) || 0;
+      if (v <= 0 || goal <= 0) {
+        simulationTextEl.textContent =
+          "Simulation: enter a positive amount and set a goal first.";
+        return;
+      }
+      const netSaved = Math.max(0, saved - debt);
+      const remaining = Math.max(0, goal - netSaved);
+      if (remaining <= 0) {
+        simulationTextEl.textContent =
+          "Simulation: you already reached your goal.";
+        return;
+      }
+      let perMonth = 0;
+      const mode = savePerModeEl.value;
+      if (mode === "day") perMonth = v * 30;
+      else if (mode === "week") perMonth = v * 4.345;
+      else perMonth = v;
+
+      if (perMonth <= 0) {
+        simulationTextEl.textContent = "Simulation: amount is too small.";
+        return;
+      }
+
+      const months = remaining / perMonth;
+      const days = months * 30;
+      const now = new Date();
+      const targetDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      const yyyy = targetDate.getFullYear();
+      const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(targetDate.getDate()).padStart(2, "0");
+
+      simulationTextEl.textContent =
+        "Simulation: about " +
+        months.toFixed(1) +
+        " months (" +
+        Math.round(days) +
+        " days). Around " +
+        yyyy +
+        "-" +
+        mm +
+        "-" +
+        dd +
+        ".";
+    };
+
+    timelineFilterSelect.onchange = () => renderTimeline();
+
+    // --- init ---
+    loadState();
+    const savedTheme = localStorage.getItem("rio_theme") || "light";
+    applyTheme(savedTheme);
+    render();
+  </script>
+</body>
+</html>
